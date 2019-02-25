@@ -6,12 +6,25 @@ const exphbs=require('express-handlebars');
 
 const app=express();
 
+// Handlebar middleware
+app.engine('handlebars',exphbs({
+  defaultLayout:'main'
+}))
+app.set('view engine','handlebars');
+
+// Cross Origin request middleware
 app.use(cors());
+
+// BodyParser middleware
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
 
+// Set Static Folder
+app.use(express.static(`${__dirname}/public`));
+
+// Index Route
 app.get('/',(req,res)=>{
-  res.send('Hi');
+  res.render('index');
 })
 
 const port=process.env.PORT || 5555
