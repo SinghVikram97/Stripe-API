@@ -1,34 +1,57 @@
-const express=require('express');
-const stripe=require('stripe')('sk_test_3brRkDrLyc5dBgxxuuiqRP4S');
-const bodyParser=require('body-parser');
-const cors=require('cors');
-const exphbs=require('express-handlebars');
+const express = require("express");
+const stripe = require("stripe")("sk_test_3brRkDrLyc5dBgxxuuiqRP4S");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const exphbs = require("express-handlebars");
 
-const app=express();
+const app = express();
 
 // Handlebar middleware
-app.engine('handlebars',exphbs({
-  defaultLayout:'main'
-}))
-app.set('view engine','handlebars');
+app.engine(
+  "handlebars",
+  exphbs({
+    defaultLayout: "main"
+  })
+);
+app.set("view engine", "handlebars");
 
 // Cross Origin request middleware
 app.use(cors());
 
 // BodyParser middleware
-app.use(bodyParser.urlencoded({extended:false}));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // Set Static Folder
 app.use(express.static(`${__dirname}/public`));
 
 // Index Route
-app.get('/',(req,res)=>{
-  res.render('index');
-})
+app.get("/", (req, res) => {
+  res.render("index");
+});
 
-const port=process.env.PORT || 5555
+// Charge Route
+app.post("/charge", (req, res) => {
+  const amount = 2500;
 
-app.listen(port,()=>{
+  stripe.customers
+    .create({
+      email: req.body.stripeEmail,
+      source: req.body.stripeToken
+    })
+    .then(customer =>
+      stripe.charges.create({
+        amount,
+        description: "Web Development Ebook",
+        currency: "usd",
+        customer: customer.id
+      })
+    )
+    .then(charge => res.render("success"));
+});
+
+const port = process.env.PORT || 5555;
+
+app.listen(port, () => {
   console.log("Server started on http://localhost:5555");
-})
+});
